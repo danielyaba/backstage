@@ -8,7 +8,6 @@ on:
 env:
   DOCKER_IMAGE_NAME: backstage
   DOCKER_IMAGE_TAG: 0.1.0
-  # DOCKER_REPOSITORY: danielyaba
 
 jobs:
   build:
@@ -23,29 +22,38 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install dependencies
+      - name: Install yarn
         run: |
-          cd packages/backend
-          yarn install
+          yarn install --frozen-lockfile
+
+      - name: Compile TypeScript
+        run: |
+          yarn tsc
 
       - name: Build the Backstage app
         run: |
-          cd packages/backend
-          yarn tsc
-          yarn build
+          yarn build --config ../../app-config.yaml
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}
+          file: packages/backend/Dockerfile
 
-      - name: Build Docker image
-        run: |
-          cd packages/backend
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }} .
+      # - name: Build Docker image
+      #   run: |
+      #     docker build . -f packages/backend/Dockerfile -t  ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }} 
 
-      - name: Push Docker image
-        run: |
-          docker tag ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }} ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}
-          docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}
+      # - name: Push Docker image
+      #   run: |
+      #     docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}
