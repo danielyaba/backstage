@@ -33,6 +33,14 @@ jobs:
       - name: Build the Backstage app
         run: |
           yarn build:backend --config ../../app-config.yaml
+
+      - name: Verify bundle.tar.gz creation
+        run: |
+          if [ ! -f "packages/backend/dist/bundle.tar.gz" ]; then
+            echo "Error: bundle.tar.gz not found in packages/backend/dist."
+            exit 1
+          fi
+          # tar tzf packages/backend/dist/bundle.tar.gz
         
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
