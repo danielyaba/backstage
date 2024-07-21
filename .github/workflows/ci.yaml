@@ -7,7 +7,7 @@ on:
 
 env:
   DOCKER_IMAGE_NAME: backstage
-  DOCKER_IMAGE_TAG: 0.1.0
+  DOCKER_IMAGE_TAG: 0.1.1
 
 jobs:
   build:
