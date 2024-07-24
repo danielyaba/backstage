@@ -68,7 +68,7 @@ const customAuth = createBackendModule({
               // });
               const userEntityRef = stringifyEntityRef({
                 kind: 'User',
-                name: userId,
+                name: name,
                 namespace: DEFAULT_NAMESPACE,
               });
               return ctx.issueToken({
