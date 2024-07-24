@@ -38,7 +38,7 @@ const customAuth = createBackendModule({
               // myEmailValidator(email);
             
               // This example resolver simply uses the local part of the email as the name.
-              const [name,domain] = email.split('@');
+              const [name] = email.split('@');
             
               // This helper function handles sign-in by looking up a user in the catalog.
               // The lookup can be done either by reference, annotations, or custom filters.
