@@ -4,6 +4,11 @@ import {
   authProvidersExtensionPoint,
   createOAuthProviderFactory,
 } from '@backstage/plugin-auth-node';
+import {
+  DEFAULT_NAMESPACE,
+  stringifyEntityRef,
+} from '@backstage/catalog-model';
+import { Config } from '@backstage/config';
 
 const customAuth = createBackendModule({
   // This ID must be exactly "auth" because that's the plugin it targets
@@ -12,8 +17,12 @@ const customAuth = createBackendModule({
   moduleId: 'custom-auth-provider',
   register(reg) {
     reg.registerInit({
-      deps: { providers: authProvidersExtensionPoint },
-      async init({ providers }) {
+      deps: { 
+        providers: authProvidersExtensionPoint, 
+        config: Config,
+      },
+      async init({ providers, config }) {
+        const allowedDomain = config.getString('auth.providers.google.development.domain');
         providers.registerProvider({
           // This ID must match the actual provider config, e.g. addressing
           // auth.providers.google means that this must be "google".
@@ -38,7 +47,14 @@ const customAuth = createBackendModule({
               // myEmailValidator(email);
             
               // This example resolver simply uses the local part of the email as the name.
-              const [name] = email.split('@');
+              const [name, domain] = email.split('@');
+
+              // Verify the email domain against the allowed domain.
+              if (domain !== allowedDomain) {
+                throw new Error(
+                  `Login failed, '${email}' does not belong to the expected domain '${allowedDomain}'`
+                );
+              }
             
               // This helper function handles sign-in by looking up a user in the catalog.
               // The lookup can be done either by reference, annotations, or custom filters.
@@ -47,8 +63,19 @@ const customAuth = createBackendModule({
               // membership logic to determine the ownership references of the user.
               //
               // There are a number of other methods on the ctx, feel free to explore them!
-              return ctx.signInWithCatalogUser({
-                entityRef: { name },
+              // return ctx.signInWithCatalogUser({
+              //   entityRef: { name },
+              // });
+              const userEntityRef = stringifyEntityRef({
+                kind: 'User',
+                name: userId,
+                namespace: DEFAULT_NAMESPACE,
+              });
+              return ctx.issueToken({
+                claims: {
+                  sub: userEntityRef,
+                  ent: [userEntityRef],
+                },
               });
             }
           }),
