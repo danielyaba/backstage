@@ -1,4 +1,7 @@
-import { createBackendModule } from '@backstage/backend-plugin-api';
+import { 
+  createBackendModule,
+  coreServices,
+ } from '@backstage/backend-plugin-api';
 import { googleAuthenticator } from '@backstage/plugin-auth-backend-module-google-provider';
 import {
   authProvidersExtensionPoint,
@@ -8,7 +11,7 @@ import {
   DEFAULT_NAMESPACE,
   stringifyEntityRef,
 } from '@backstage/catalog-model';
-import { Config } from '@backstage/config';
+
 
 const customAuth = createBackendModule({
   // This ID must be exactly "auth" because that's the plugin it targets
@@ -19,7 +22,7 @@ const customAuth = createBackendModule({
     reg.registerInit({
       deps: { 
         providers: authProvidersExtensionPoint, 
-        config: Config,
+        config: coreServices.rootConfig,
       },
       async init({ providers, config }) {
         const allowedDomain = config.getString('auth.providers.google.development.domain');
