@@ -64,15 +64,13 @@ const app = createApp({
     SignInPage: props => (
       <SignInPage
         {...props}
-        providers={[
-          'guest',
-          {
-            id: 'google-auth-provider',
-            title: 'Google',
-            message: 'Sign in using Google',
-            apiRef: googleAuthApiRef,
-          },
-        ]}
+        auto
+        provider={{
+          id: 'google-auth-provider',
+          title: 'Google',
+          message: 'Sign in using Google',
+          apiRef: googleAuthApiRef,
+        }}
       />
     ),
   },
